@@ -1,0 +1,221 @@
+String Matching:
+
+1.  a)
+
+		public static Boolean checkSocial(String s) {
+			return s.matches("\\d{3}-\\d{2}-\\d{4}|\\d{9}");
+		}
+
+	b)
+
+		public static Boolean checkBetterSocial(String s) {
+			return s.matches("([0-6]\\d\\d|7[0-6]\\d|77[0-2])-\\d{2}-\\d{4}");
+		}
+
+2.  a)	6707
+		grep -E "(^([Rr][Tt]|Retweet)| ([Rr][Tt]|Retweet)):?\s*@\w+[\s:]?" assignment1_resources/twitter.posts -c
+
+	b)  "Retweet" 2
+		grep -E "(^Retweet| Retweet)	:?\s*@\w+[\s:]?" assignment1_resources/twitter.posts -c
+
+		"RT" 6636
+		grep -E "(^RT| RT):?\s*@\w+[\s:]?" assignment1_resources/twitter.posts -c
+
+		"Rt" 25
+		grep -E "(^Rt| Rt):?\s*@\w+[\s:]?" assignment1_resources/twitter.posts -c
+
+
+		"rt" 55
+		grep -E "(^rt| rt):?\s*@\w+[\s:]?" assignment1_resources/twitter.posts -c
+
+		As you can see, some tweets use both RT and rt for multiple retweets. 
+
+String Replacement:
+
+3.  sed -E "s/&nbsp;/ /g" filename | sed -E "s/<title>/Title: /g" | sed -E "s/<[^<]*>//g"
+
+4.  
+
+import re
+
+def pig_latin(s):
+	return re.sub("([^aeiou]*)(.*)", '\\2\\1ay', s)
+
+Data Analysis:
+
+3. 
+							  |	normal	 |	simple
+______________________________|__________|___________
+total paragraphs			  |	18,087	 | 2,189
+______________________________|__________|___________
+paragraphs per article		  | 36.17	 | 4.38
+______________________________|__________|___________
+total sentences				  |	60,031	 | 6,991
+______________________________|__________|___________
+sentences per article		  | 120.06	 | 13.98
+______________________________|__________|___________
+total words					  |	1,369,461| 113,287
+______________________________|__________|___________
+words per article			  | 2,738.92 | 226.57
+______________________________|__________|___________
+words per sentence			  |	22.62	 | 15.12
+______________________________|__________|___________
+vocab size					  | 66,776	 | 13,341
+______________________________|__________|___________
+vocab size 2				  |	58,283	 | 11,993
+______________________________|__________|___________
+
+
+4. This is a very interesting quote, "...but it is quite long so I had to shorten it..."
+
+5. "New York" would be two different tokens when we would really want it to be one token because "New" and "York" do not mean what we want when used seperately. 
+
+6. 
+
+normal: [('the', 94338), ('of', 57221), ('and', 43697), ('in', 33617), ('to', 32292), ('a', 27603), ('is', 16796), ('as', 13239), ('was', 12806), ('The', 12301)] 
+
+simple: [('the', 7069), ('of', 3929), ('and', 3164), ('in', 2710), ('a', 2624), ('to', 2521), ('is', 2449), ('was', 1306), ('The', 1181), ('that', 1173)] 
+
+They are almost exactly the same, no surprises. 
+
+7. 
+
+i. I compared the average length of the words in each corpus. It would make sense if the simplified documents had shorter words than the normal text. To do this I took the lengths of the words and found the average. The results are given below:
+
+normal: 5
+
+simple: 4.6
+
+As you can see, the hypothesis is justified. The average word length of the normal text is .4 more than the simplified version. 
+
+ii. Secondly, I analyzed the punctuation differences in the two texts. Unsurprisingly, the simplified version used much less punctuation, most likely because the simplified version has much less actual text. Thus, I decided to calculate the words per punctuation used (number of total words divided by the number of occurances of the punctution type):
+
+			  		      |	normal	|	simple
+__________________________|_________|___________
+words per period 	      | 19.1    | 14.1
+__________________________|_________|___________
+words per comma 	      | 14.9    | 17.5
+__________________________|_________|___________
+words per question mark   | 6,490   | 4,720
+__________________________|_________|___________
+words per exclamation mark| 8,950   | 3,906
+__________________________|_________|___________
+words per semicolon       | 402     | 826
+__________________________|_________|___________
+words per colon           | 546     | 640
+
+Looking at the table above, we can see that some forms of punctuation are actually more popular in the simplified text and some are not. First, periods are more frequent in the simple documents. This makes sense because the sentences are shorter than in the normal version. However, commas are less frequent in the simplified text. This also makes sense because commas are generally used to add information that is not essential to the meaning of a sentence. This information is removed in the simple text which renders the comma less useful. Question and exclamation marks are similar to the period, more frequently used in the simple text because the sentences are shorter. Semicolons and colons are more like the comma. Both forms of the colon, especially the semicolon, are also used to add descriptive or non-essential information, so they appear less often in the simple text. If anything, this analysis verified the typical uses for each method of punctuation in the English language. 
+
+
+EXTRA CREDIT:
+
+To improve upon our word tokenizer, I used a method Stemming. Stemming aims to reduce words to their root in order to better analyze a corpus. For example, "played", "plays", "plalaying" all share the common root form "play". These variations of "play" do not add any extra information if the goal of the analysis is to analyze the topics of a corpus. Without stemming, we could gather that a certain article has the words "play", "playing", "plays", and "played" but they are only seen once. With stemming, we could say that the root "play" appears four times in the document and thus is an important theme. This method is used extensively in topic modeling. One example would be if we were trying to get the main themes of each wikipedia article in the corpus. 
+
+To implement this in our word tokenizer, I used the nltk package in Python. The code can be found at the end of my report. After stemming the words for each corpus, I unsurprisingly found that the number of unique stemmed words is much less than the total number of unique words:
+
+normal: 
+
+	total lowercase unique: 58,283
+
+	stemmed lowercase unique: 41,727
+
+simple:
+
+	total lowercase unique: 11,993
+
+	stemmed lowercase unique: 8,874
+
+
+----------------------------------------------------------------------------
+
+Code used for data analysis (Python):
+
+
+import re
+import pandas as pd
+from collections import Counter
+from nltk.stem.porter import PorterStemmer
+
+def sentence_splitter(paragraph):
+    sentences = re.split('(?<=\.|\!|\?)\"? ', paragraph)
+    new_sentences = []
+    for i,sentence in enumerate(sentences):
+        if i == 0:
+            new_sentences.append(sentence)
+        elif sentence and sentence[0].islower():
+            last = new_sentences.pop()
+            new_sentences.append(last + sentence)
+        elif i < len(sentences) - 1 and sentence and sentence[-1] == '.' and len(sentence.split(' ')[-1][0]) < 4 and sentence.split(' ')[-1][0].isupper():
+            sentences[i+1] = sentence + sentences[i+1]
+        elif sentence:
+            new_sentences.append(sentence)
+    return new_sentences
+
+def tokenize(sentence):
+    words = sentence.split(' ')
+    tokens = []
+    word_tokens = []
+    for word in words:
+        while word and word[-1] in ",:;'().?!":
+            word = word.split(word[-1])[0]
+        tokens.append(word)
+    for token in tokens:
+        if re.match('^[a-zA-Z0-9]+$', token):
+            word_tokens.append(token)
+    return word_tokens
+
+filenames = ['normal', 'simple']
+for filename in filenames:
+    print(filename + ":")
+    with open('assignment1_resources/' + filename + '.txt', 'r') as f:
+        text = f.read() 
+        periods = text.count(".")
+        commas = text.count(",")
+        question_marks = text.count("?")
+        ex_points = text.count("!")
+        colons = text.count(":")
+        semicolons = text.count(";")
+
+    articles = [x.split('</TITLE>\n')[1] for x in text.split('<TITLE>')[1:]]
+    paragraphs = []
+    sentences = []
+    words = []
+    for article in articles:
+        pars = article.split('\n\n')[:-1]
+        paragraphs = paragraphs + pars
+        for p in pars:
+            sentences.append(sentence_splitter(p))
+    num_sentences = 0
+    for s in sentences:
+        num_sentences += len(s)
+        for sent in s:
+            words.append(tokenize(sent))
+    num_words = 0
+    for w in words:
+        num_words += len(w)
+    all_words = Counter([j for i in words for j in i])
+    unique_words = set([j for i in words for j in i])
+    unique_nocase_words = set([j.lower() for i in words for j in i])
+    word_lengths = [len(j) for i in words for j in i]
+    all_tokens = [j for i in words for j in i]
+    p_stemmer = PorterStemmer()
+    stemmed_tokens = [p_stemmer.stem(i.lower()) for i in all_tokens]
+    print('total paragraphs:', len(paragraphs))
+    print('average paragraphs per article:', len(paragraphs)/len(articles))
+    print('total sentences:', num_sentences)
+    print('average sentences per article:', num_sentences/len(articles))
+    print('total words:', num_words)
+    print('average words per article:', num_words/len(articles))
+    print('average words per sentence:', num_words/num_sentences)
+    print('unique words:', len(unique_words))
+    print('unique nocase words:', len(unique_nocase_words))
+    print(all_words.most_common(10))
+    print('average word length:', sum(word_lengths)/len(word_lengths))
+    print('num words per period:', num_words/periods)
+    print('num words per comma:', num_words/commas)
+    print('num words per question mark:', num_words/question_marks)
+    print('num words per exclamation point:', num_words/ex_points)
+    print('num words per semicolon:', num_words/semicolons)
+    print('num words per colon:', num_words/colons)
+    print('unique stemmed tokens:', len(set(stemmed_tokens)), '\n')
+
